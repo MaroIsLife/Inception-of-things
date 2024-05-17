@@ -40,4 +40,30 @@ then
 else
     echo "kubectl is already installed."
 fi
+# check if argocd is installed
+if ! command -v argocd &> /dev/null
+then
+    echo "argocd is not installed. Installing argocd..."
+    # Install argocd
+     brew install argocd
+else
+    echo "argocd is already installed."
+fi
 
+# echo "alias k=k3d" >> ~/.bashrc
+# echo "alias kb=kubectl" >> ~/.bashrc
+# echo "alias arc=argocd" >> ~/.bashrc
+# source ~/.bashrc
+
+echo "alias k=k3d" >> ~/.zshrc
+echo "alias kb=kubectl" >> ~/.zshrc
+echo "alias arc=argocd" >> ~/.zshrc
+
+source ~/.zshrc
+
+echo "Alias for k:"
+alias k
+echo "Alias for kb:"
+alias kb
+echo "Alias for arc:"
+alias arc

@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # Check if Docker is installed
 if ! command -v docker &> /dev/null
 then
@@ -50,20 +49,24 @@ else
     echo "argocd is already installed."
 fi
 
-# echo "alias k=k3d" >> ~/.bashrc
-# echo "alias kb=kubectl" >> ~/.bashrc
-# echo "alias arc=argocd" >> ~/.bashrc
-# source ~/.bashrc
 
-echo "alias k=k3d" >> ~/.zshrc
-echo "alias kb=kubectl" >> ~/.zshrc
-echo "alias arc=argocd" >> ~/.zshrc
+# setup env
+kubectl create namespace dev
+kubectl create namespace argocd
 
-source ~/.zshrc
+# set context to argocd namespace  so we don't need to specify (-n argocd everytime) it will work directly in the argocd namespace
+kubectl config set-context --current --namespace=argocd
+kubectl apply -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
-echo "Alias for k:"
-alias k
-echo "Alias for kb:"
-alias kb
-echo "Alias for arc:"
-alias arc
+
+#Port forwarding in Kubernetes allows you to access services running inside your Kubernetes cluster from your local machine. This is particularly useful for accessing services that are not exposed to the internet.
+kubectl port-forward svc/argocd-server  8080:443
+
+
+
+#get user credentials
+echo username = admin
+echo password to log into argocd ui = ; argocd admin initial-password  
+
+#deplpy app with argocd
+argocd app create guestbook --repo https://github.com/elhadjaoui/InceptionOfThings.git --path manifests --dest-server https://kubernetes.default.svc --dest-namespace dev

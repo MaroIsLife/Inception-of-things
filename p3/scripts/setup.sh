@@ -44,29 +44,34 @@ if ! command -v argocd &> /dev/null
 then
     echo "argocd is not installed. Installing argocd..."
     # Install argocd
-     brew install argocd
+    curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+    chmod +x /usr/local/bin/argocd
 else
     echo "argocd is already installed."
 fi
 
+#create cluster
+k3d cluster create iot-cluster
+echo "cluster created"
 
 # setup env
 kubectl create namespace dev
 kubectl create namespace argocd
 
-# set context to argocd namespace  so we don't need to specify (-n argocd everytime) it will work directly in the argocd namespace
-kubectl config set-context --current --namespace=argocd
 kubectl apply -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
 
 #Port forwarding in Kubernetes allows you to access services running inside your Kubernetes cluster from your local machine. This is particularly useful for accessing services that are not exposed to the internet.
-kubectl port-forward svc/argocd-server  8080:443
+kubectl port-forward svc/argocd-server  8080:443 > /dev/null &
 
 
 
 #get user credentials
-echo username = admin
-echo password to log into argocd ui = ; argocd admin initial-password  
-
+echo  username = admin
+echo -n "password to log into argocd ui = " ; argocd admin initial-password  
+# set context to argocd namespace  so we don't need to specify (-n argocd everytime) it will work directly in the argocd namespace
+#kubectl config set-context --current --namespace=argocd
+argocd login localhost:8080
 #deplpy app with argocd
-argocd app create guestbook --repo https://github.com/elhadjaoui/InceptionOfThings.git --path manifests --dest-server https://kubernetes.default.svc --dest-namespace dev
+argocd app create will-app --repo https://github.com/elhadjaoui/InceptionOfThings.git --path manifests --dest-server https://kubernetes.default.svc --dest-namespace dev
+argocd app sync will-app > /dev/null

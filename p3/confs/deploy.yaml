@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: will-app
+spec:
+  selector:
+    matchLabels:
+      app: will-app
+  template:
+    metadata:
+      labels:
+        app: will-app
+    spec:
+      containers:
+      - image: wil42/playground:v1
+        name: will-app
+        ports:
+        - containerPort: 8888
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: will-app
+spec:
+  ports:
+  - port: 80
+    targetPort: 80
+  selector:
+    app: will-app

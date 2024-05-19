@@ -82,16 +82,20 @@ done
 
 echo "All pods are now in Running status."
 #Port forwarding in Kubernetes allows you to access services running inside your Kubernetes cluster from your local machine. This is particularly useful for accessing services that are not exposed to the internet.
-kubectl port-forward svc/argocd-server  8080:443 > /dev/null &
+kubectl port-forward svc/argocd-server -n argocd  8080:443 > /dev/null &
 
 
 
 #get user credentials
 echo  username = admin
-echo -n "password to log into argocd ui = " ; argocd admin initial-password  
+echo -n "password to log into argocd ui = " ; 
+argocd admin initial-password -n argocd 
 # set context to argocd namespace  so we don't need to specify (-n argocd everytime) it will work directly in the argocd namespace
 #kubectl config set-context --current --namespace=argocd
 #argocd login localhost:8080
+ARGOCD_PASSWORD=$(kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d)
+echo $ARGOCD_PASSWORD
+argocd login localhost:8080 --username admin --password $ARGOCD_PASSWORD
 #deplpy app with argocd
-argocd app create will-app --repo https://github.com/elhadjaoui/InceptionOfThings.git --path manifests --dest-server https://kubernetes.default.svc --dest-namespace dev
+argocd app create will-app --repo https://github.com/elhadjaoui/InceptionOfThings.git --path manifests --dest-server https://kubernetes.default.svc --dest-namespace dev --sync-policy automated
 argocd app sync will-app > /dev/null

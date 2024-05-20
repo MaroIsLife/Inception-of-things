@@ -95,7 +95,11 @@ argocd admin initial-password -n argocd
 #argocd login localhost:8080
 ARGOCD_PASSWORD=$(kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d)
 echo $ARGOCD_PASSWORD
-argocd login localhost:8080 --username admin --password $ARGOCD_PASSWORD
+argocd login --insecure localhost:8080 --username admin --password $ARGOCD_PASSWORD
 #deplpy app with argocd
 argocd app create will-app --repo https://github.com/elhadjaoui/InceptionOfThings.git --path manifests --dest-server https://kubernetes.default.svc --dest-namespace dev --sync-policy automated
-argocd app sync will-app > /dev/null
+#argocd app sync will-app > /dev/null
+sleep 3
+# map 8888 host port to 8888 cluster port 
+kubectl port-forward svc/will-app -n dev 8888:8888 > /dev/null &
+

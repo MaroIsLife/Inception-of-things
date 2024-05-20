@@ -1,4 +1,10 @@
 #!/bin/bash
+#useful commands 
+#kubectl delete pods --all  
+#k3d cluster delete [clusteName]
+#k3d cluster list
+
+
 # Check if Docker is installed
 if ! command -v docker &> /dev/null
 then
@@ -51,23 +57,22 @@ else
 fi
 
 #create cluster
-k3d cluster create iot-cluster
-echo "cluster created"
+k3d cluster create iot-cluster -p "8888:30007@agent:0" --agents 1
 
 # setup env
 kubectl create namespace dev
 kubectl create namespace argocd
 
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-
+sleep 3
 # Function to check if all pods are running
 are_all_pods_running() {
-    local NOT_RUNNING_PODS=$(kubectl get pods -n argocd --field-selector=status.phase!=Running -o jsonpath='{.items[*].metadata.name}')
-    
+    local NOT_RUNNING_PODS=$(kubectl get pods -n argocd --field-selector=status.phase!=Running -o jsonpath='{range .items[*]}{@.metadata.name}')
     if [ -z "$NOT_RUNNING_PODS" ]; then
         return 0  # All pods are running
     else
-        echo "The following pods are not running: $NOT_RUNNING_PODS"
+        echo "The following pods are not running:"
+        echo "$NOT_RUNNING_PODS"
         return 1  # Some pods are not running
     fi
 }
@@ -79,27 +84,17 @@ while ! are_all_pods_running; do
     kubectl get pods -n argocd
     sleep 10  # Wait for 10 seconds before checking again
 done
-
 echo "All pods are now in Running status."
 #Port forwarding in Kubernetes allows you to access services running inside your Kubernetes cluster from your local machine. This is particularly useful for accessing services that are not exposed to the internet.
 kubectl port-forward svc/argocd-server -n argocd  8080:443 > /dev/null &
-
-
 
 #get user credentials
 echo  username = admin
 echo -n "password to log into argocd ui = " ; 
 argocd admin initial-password -n argocd 
-# set context to argocd namespace  so we don't need to specify (-n argocd everytime) it will work directly in the argocd namespace
-#kubectl config set-context --current --namespace=argocd
-#argocd login localhost:8080
 ARGOCD_PASSWORD=$(kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d)
 echo $ARGOCD_PASSWORD
 argocd login --insecure localhost:8080 --username admin --password $ARGOCD_PASSWORD
-#deplpy app with argocd
+#deploy app with argocd
 argocd app create will-app --repo https://github.com/elhadjaoui/InceptionOfThings.git --path manifests --dest-server https://kubernetes.default.svc --dest-namespace dev --sync-policy automated
-#argocd app sync will-app > /dev/null
-sleep 3
-# map 8888 host port to 8888 cluster port 
-kubectl port-forward svc/will-app -n dev 8888:8888 > /dev/null &
 

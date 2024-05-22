@@ -57,7 +57,7 @@ else
 fi
 
 #create cluster
-k3d cluster create iot-cluster -p "8888:30007@agent:0" --agents 1
+k3d cluster create iot-cluster -p "8888:30007"
 
 # setup env
 kubectl create namespace dev
@@ -86,7 +86,7 @@ while ! are_all_pods_running; do
 done
 echo "All pods are now in Running status."
 #Port forwarding in Kubernetes allows you to access services running inside your Kubernetes cluster from your local machine. This is particularly useful for accessing services that are not exposed to the internet.
-kubectl port-forward svc/argocd-server -n argocd  8080:443 > /dev/null &
+kubectl port-forward svc/argocd-server -n argocd  8080:443 &> /dev/null &
 
 #get user credentials
 echo  username = admin

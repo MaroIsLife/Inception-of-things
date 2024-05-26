@@ -101,6 +101,15 @@ argocd app create will-app --repo https://github.com/elhadjaoui/InceptionOfThing
 # add gitlab namespace
 kubectl create namespace gitlab
 
+# install helm package manager for kubernetes applications
+if ! command -v helm &> /dev/null
+then
+    echo "helm is not installed. Installing helm..."
+    # Install helm
+    curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+else
+    echo "helm is already installed."
+
 # add gitlab to helm repo
 helm repo add gitlab https://charts.gitlab.io/
 

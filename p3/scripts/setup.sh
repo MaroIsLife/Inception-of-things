@@ -98,3 +98,15 @@ argocd login --insecure localhost:8080 --username admin --password $ARGOCD_PASSW
 #deploy app with argocd
 argocd app create will-app --repo https://github.com/elhadjaoui/InceptionOfThings.git --path manifests --dest-server https://kubernetes.default.svc --dest-namespace dev --sync-policy automated
 
+# add gitlab namespace
+kubectl create namespace gitlab
+
+# add gitlab to helm repo
+helm repo add gitlab https://charts.gitlab.io/
+
+# run gitlab application
+helm install gitlab gitlab/gitlab --namespace gitlab --set global.hosts.domain=localhost --set certmanager-issuer.email=amghough551@gmail.com
+
+# expose gitlab service
+kubectl port-forward -n gitlab svc/gitlab-nginx-ingress-controller 443:443 &> /dev/null &
+

@@ -64,7 +64,7 @@ kubectl create namespace dev
 kubectl create namespace argocd
 
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-sleep 3
+sleep 10
 # Function to check if all pods are running
 are_all_pods_running() {
     local NOT_RUNNING_PODS=$(kubectl get pods -n argocd --field-selector=status.phase!=Running -o jsonpath='{range .items[*]}{@.metadata.name}')
@@ -95,6 +95,7 @@ argocd admin initial-password -n argocd
 ARGOCD_PASSWORD=$(kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d)
 echo $ARGOCD_PASSWORD
 argocd login --insecure localhost:8080 --username admin --password $ARGOCD_PASSWORD
+sleep 4
 #deploy app with argocd
 argocd app create will-app --repo https://github.com/elhadjaoui/InceptionOfThings.git --path manifests --dest-server https://kubernetes.default.svc --dest-namespace dev --sync-policy automated
 
@@ -116,6 +117,32 @@ helm repo add gitlab https://charts.gitlab.io/
 # run gitlab application
 helm install gitlab gitlab/gitlab --namespace gitlab --set global.hosts.domain=localhost --set certmanager-issuer.email=amghough551@gmail.com
 
+sleep 10
+
+waiting_for_gitlab_pods() {
+    local NOT_RUNNING_PODS=$(kubectl get pods -n gitlab --field-selector=status.phase!=Running -o jsonpath='{range .items[*]}{@.metadata.name}')
+    if [ -z "$NOT_RUNNING_PODS" ]; then
+        return 0  # All pods are running
+    else
+        echo "The following pods are not running:"
+        echo "$NOT_RUNNING_PODS"
+        return 1  # Some pods are not running
+    fi
+}
+# Loop until all pods are running
+while ! waiting_for_gitlab_pods; do
+    echo "Waiting for all pods to be in Running status..."
+    echo "Current pod statuses:"
+    kubectl get pods -n gitlab
+    sleep 10  # Wait for 10 seconds before checking again
+done
+
+# get default password
+kubectl get secret -n gitlab gitlab-gitlab-initial-root-password -ojsonpath='{.data.password}' | base64 --decode ; echo
+
+# set global config to git to disable ssl verification
+git config --global http.sslVerify false
+
+
 # expose gitlab service
 kubectl port-forward -n gitlab svc/gitlab-nginx-ingress-controller 443:443 &> /dev/null &
-

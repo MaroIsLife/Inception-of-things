@@ -110,6 +110,7 @@ then
     curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 else
     echo "helm is already installed."
+fi
 
 # add gitlab to helm repo
 helm repo add gitlab https://charts.gitlab.io/
@@ -140,9 +141,11 @@ done
 # get default password
 kubectl get secret -n gitlab gitlab-gitlab-initial-root-password -ojsonpath='{.data.password}' | base64 --decode ; echo
 
+# install gitlab cli utility
+curl -s https://raw.githubusercontent.com/zaquestion/lab/master/install.sh | sudo bash
+
 # set global config to git to disable ssl verification
 git config --global http.sslVerify false
-
 
 # expose gitlab service
 kubectl port-forward -n gitlab svc/gitlab-nginx-ingress-controller 443:443 &> /dev/null &

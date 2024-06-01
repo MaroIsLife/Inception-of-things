@@ -120,22 +120,27 @@ helm install gitlab gitlab/gitlab --namespace gitlab --set global.hosts.domain=l
 
 sleep 10
 
-waiting_for_gitlab_pods() {
-    local NOT_RUNNING_PODS=$(kubectl get pods -n gitlab --field-selector=status.phase!=Running -o jsonpath='{range .items[*]}{@.metadata.name}')
-    if [ -z "$NOT_RUNNING_PODS" ]; then
-        return 0  # All pods are running
-    else
-        echo "The following pods are not running:"
-        echo "$NOT_RUNNING_PODS"
-        return 1  # Some pods are not running
+# Loop until the neccessary pods are running
+while [ 1 ]
+do
+    exit=0
+    for i in 0 1
+    do
+        podStatus=$(kubectl get pods -n gitlab -l app='webservice' -o jsonpath="{.items[$i].status.phase}")
+        if [ $podStatus = "Running" ];
+        then
+            echo "\033[0;32mCurrent pod status is $podStatus\033[0m"
+            exit=1
+            break
+        else 
+            echo "\033[0;34mCurrent pod status is $podStatus\033[0m"
+        fi
+    done
+    if [ $exit = 1 ];
+    then
+        break
     fi
-}
-# Loop until all pods are running
-while ! waiting_for_gitlab_pods; do
-    echo "Waiting for all pods to be in Running status..."
-    echo "Current pod statuses:"
-    kubectl get pods -n gitlab
-    sleep 10  # Wait for 10 seconds before checking again
+    sleep 10
 done
 
 # get default password

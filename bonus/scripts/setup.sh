@@ -95,11 +95,10 @@ argocd admin initial-password -n argocd
 ARGOCD_PASSWORD=$(kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d)
 echo $ARGOCD_PASSWORD
 argocd login --insecure localhost:8080 --username admin --password $ARGOCD_PASSWORD
-sleep 4
-#deploy app with argocd
-argocd app create will-app --repo https://github.com/elhadjaoui/InceptionOfThings.git --path manifests --dest-server https://kubernetes.default.svc --dest-namespace dev --sync-policy automated
 
-# add gitlab namespace
+sleep 4
+
+# create gitlab namespace
 kubectl create namespace gitlab
 
 # install helm package manager for kubernetes applications
@@ -115,8 +114,11 @@ fi
 # add gitlab to helm repo
 helm repo add gitlab https://charts.gitlab.io/
 
+
+echo "\033[0;34m-----Start installing Gitlab with Helm----- \033[0m"
 # run gitlab application
 helm install gitlab gitlab/gitlab --namespace gitlab --set global.hosts.domain=localhost --set certmanager-issuer.email=amghough551@gmail.com
+echo "\033[0;32mGitlab installed successfully with Helm\033[0m"
 
 sleep 10
 
@@ -129,28 +131,50 @@ do
         podStatus=$(kubectl get pods -n gitlab -l app='webservice' -o jsonpath="{.items[$i].status.phase}")
         if [ $podStatus = "Running" ];
         then
-            echo "\033[0;32mCurrent pod status is $podStatus\033[0m"
             exit=1
             break
-        else 
-            echo "\033[0;34mCurrent pod status is $podStatus\033[0m"
         fi
     done
     if [ $exit = 1 ];
     then
+        echo "\033[0;32mCurrent pod status is $podStatus\033[0m"
         break
+    else
+        echo "\033[0;34mCurrent pod status is $podStatus\033[0m"
+        sudo kubectl get pods -n gitlab
     fi
     sleep 10
 done
 
 # get default password
-kubectl get secret -n gitlab gitlab-gitlab-initial-root-password -ojsonpath='{.data.password}' | base64 --decode ; echo
-
-# install gitlab cli utility
-curl -s https://raw.githubusercontent.com/zaquestion/lab/master/install.sh | sudo bash
-
-# set global config to git to disable ssl verification
-git config --global http.sslVerify false
+gitlabPassword=$(kubectl get secret -n gitlab gitlab-gitlab-initial-root-password -ojsonpath='{.data.password}' | base64 --decode)
+echo "\033[0;32mGitlab Password: $gitlabPassword\033[0m"
 
 # expose gitlab service
 kubectl port-forward -n gitlab svc/gitlab-nginx-ingress-controller 443:443 &> /dev/null &
+echo "\033[0;32mGitlab has been successfully exposed\033[0m"
+
+# pull repo from github
+git clone https://github.com/amg-1337bg/bamghoug-IOT-p3.git
+
+# change dir
+cd bamghoug-IOT-p3
+
+sleep 10
+
+# set global got config to disable ssl verification
+git config --global http.sslVerify false
+
+# create repository on gitlab
+git push --set-upstream https://gitlab.localhost/root/bamghoug-IOT-p3.git main
+
+# set global got config to enable ssl verification
+git config --global http.sslVerify true
+
+# delete the unneccessary folder
+cd ..
+rm -rf bamghoug-IOT-p3
+
+
+#deploy app with argocd
+# argocd app create bamghoug-app --repo https://gitlab.localhost/root/bamghoug-IOT-p3.git --path bamghoug-IOT-p3 --dest-server https://kubernetes.default.svc --dest-namespace dev --sync-policy automated --username root --password mX1PIVg2Agy6mlPInbgf93xV0CwLLH2cWxOT0CJvmGA2JHOwQg5aDr7qDbXHUjJZ

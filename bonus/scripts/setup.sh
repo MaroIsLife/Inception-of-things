@@ -114,10 +114,11 @@ fi
 # add gitlab to helm repo
 helm repo add gitlab https://charts.gitlab.io/
 
+gitlabDomain=localhost
 
 echo "\033[0;34m-----Start installing Gitlab with Helm----- \033[0m"
 # run gitlab application
-helm install gitlab gitlab/gitlab --namespace gitlab --set global.hosts.domain=localhost --set certmanager-issuer.email=amghough551@gmail.com
+helm install gitlab gitlab/gitlab --namespace gitlab --set global.hosts.domain=$gitlabDomain --set certmanager-issuer.email=amghough551@gmail.com
 echo "\033[0;32mGitlab installed successfully with Helm\033[0m"
 
 sleep 10
@@ -154,27 +155,12 @@ echo "\033[0;32mGitlab Password: $gitlabPassword\033[0m"
 kubectl port-forward -n gitlab svc/gitlab-nginx-ingress-controller 443:443 &> /dev/null &
 echo "\033[0;32mGitlab has been successfully exposed\033[0m"
 
-# pull repo from github
-git clone https://github.com/amg-1337bg/bamghoug-IOT-p3.git
-
-# change dir
-cd bamghoug-IOT-p3
 
 sleep 10
+Color_Off='\033[0m'
+On_White='\033[47m'
+Yellow='\033[0;33m'
 
-# set global got config to disable ssl verification
-git config --global http.sslVerify false
-
-# create repository on gitlab
-git push --set-upstream https://gitlab.localhost/root/bamghoug-IOT-p3.git main
-
-# set global got config to enable ssl verification
-git config --global http.sslVerify true
-
-# delete the unneccessary folder
-cd ..
-rm -rf bamghoug-IOT-p3
-
-
-#deploy app with argocd
-# argocd app create bamghoug-app --repo https://gitlab.localhost/root/bamghoug-IOT-p3.git --path bamghoug-IOT-p3 --dest-server https://kubernetes.default.svc --dest-namespace dev --sync-policy automated --username root --password mX1PIVg2Agy6mlPInbgf93xV0CwLLH2cWxOT0CJvmGA2JHOwQg5aDr7qDbXHUjJZ
+echo "$On_White>$Yellow You can Access Gitlab in this URL : https://gitlab.$gitlabDomain$Color_Off"
+echo "$On_White>$Yellow Gitlab username: root$Color_Off"
+echo "$On_White>$Yellow Gitlab Password: $gitlabPassword$Color_Off"

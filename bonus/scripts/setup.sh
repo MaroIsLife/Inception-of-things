@@ -86,7 +86,7 @@ while ! are_all_pods_running; do
 done
 echo "All pods are now in Running status."
 #Port forwarding in Kubernetes allows you to access services running inside your Kubernetes cluster from your local machine. This is particularly useful for accessing services that are not exposed to the internet.
-kubectl port-forward svc/argocd-server -n argocd  8080:443 &> /dev/null &
+kubectl port-forward --address 0.0.0.0 svc/argocd-server -n argocd 8080:443 &> /dev/null &
 
 #get user credentials
 echo  username = admin
@@ -152,9 +152,8 @@ gitlabPassword=$(kubectl get secret -n gitlab gitlab-gitlab-initial-root-passwor
 echo "\033[0;32mGitlab Password: $gitlabPassword\033[0m"
 
 # expose gitlab service
-kubectl port-forward -n gitlab svc/gitlab-nginx-ingress-controller 443:443 &> /dev/null &
+kubectl port-forward --address 0.0.0.0 -n gitlab svc/gitlab-nginx-ingress-controller 443:443 &> /dev/null &
 echo "\033[0;32mGitlab has been successfully exposed\033[0m"
-
 
 sleep 10
 Color_Off='\033[0m'

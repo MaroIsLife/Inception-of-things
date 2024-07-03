@@ -63,7 +63,8 @@ k3d cluster create iot-cluster -p "8888:30007"
 kubectl create namespace dev
 kubectl create namespace argocd
 
-kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+kubectl apply -n argocd -f /vagrant/confs/argocd.yaml
+
 sleep 10
 # Function to check if all pods are running
 are_all_pods_running() {
@@ -90,8 +91,8 @@ kubectl port-forward --address 0.0.0.0 svc/argocd-server -n argocd 8080:443 &> /
 
 #get user credentials
 echo  username = admin
-echo -n "password to log into argocd ui = " ; 
-argocd admin initial-password -n argocd 
+echo -n "password to log into argocd ui = " ;
+argocd admin initial-password -n argocd
 ARGOCD_PASSWORD=$(kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d)
 echo $ARGOCD_PASSWORD
 argocd login --insecure localhost:8080 --username admin --password $ARGOCD_PASSWORD
@@ -118,7 +119,7 @@ gitlabDomain=localhost
 
 echo "\033[0;34m-----Start installing Gitlab with Helm----- \033[0m"
 # run gitlab application
-helm install gitlab gitlab/gitlab --namespace gitlab --set global.hosts.domain=$gitlabDomain --set certmanager-issuer.email=amghough551@gmail.com
+helm install gitlab gitlab/gitlab --namespace gitlab --set global.hosts.domain=$gitlabDomain --set global.hosts.https=false --set certmanager-issuer.email=amghough551@gmail.com
 echo "\033[0;32mGitlab installed successfully with Helm\033[0m"
 
 sleep 10
@@ -149,17 +150,21 @@ done
 
 # get default password
 gitlabPassword=$(kubectl get secret -n gitlab gitlab-gitlab-initial-root-password -ojsonpath='{.data.password}' | base64 --decode)
-echo "\033[0;32mGitlab Password: $gitlabPassword\033[0m"
 
 # expose gitlab service
 kubectl port-forward --address 0.0.0.0 -n gitlab svc/gitlab-nginx-ingress-controller 443:443 &> /dev/null &
 echo "\033[0;32mGitlab has been successfully exposed\033[0m"
 
-sleep 10
-Color_Off='\033[0m'
-On_White='\033[47m'
-Yellow='\033[0;33m'
+sudo kubectl get secret gitlab-gitlab-tls -n gitlab -o jsonpath="{['data']['tls\.crt']}" | base64 --decode >> /vagrant/cert.pem
 
-echo "$On_White>$Yellow You can Access Gitlab in this URL : https://gitlab.$gitlabDomain$Color_Off"
-echo "$On_White>$Yellow Gitlab username: root$Color_Off"
-echo "$On_White>$Yellow Gitlab Password: $gitlabPassword$Color_Off"
+argocd cert add-tls --from /vagrant/cert.pem gitlab.localhost
+
+sleep 10
+
+echo "You can Access Argocd in this URL : localhost:8080"
+echo "Gitlab username: admin"
+echo "Gitlab Password: $ARGOCD_PASSWORD"
+
+echo "You can Access Gitlab in this URL : https://gitlab.$gitlabDomain"
+echo "Gitlab username: root"
+echo "Gitlab Password: $gitlabPassword"

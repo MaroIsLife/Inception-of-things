@@ -153,7 +153,7 @@ gitlabPassword=$(kubectl get secret -n gitlab gitlab-gitlab-initial-root-passwor
 
 # expose gitlab service
 kubectl port-forward --address 0.0.0.0 -n gitlab svc/gitlab-nginx-ingress-controller 443:443 &> /dev/null &
-echo "\033[0;32mGitlab has been successfully exposed\033[0m"
+echo "Gitlab has been successfully exposed"
 
 sudo kubectl get secret gitlab-gitlab-tls -n gitlab -o jsonpath="{['data']['tls\.crt']}" | base64 --decode >> /vagrant/cert.pem
 

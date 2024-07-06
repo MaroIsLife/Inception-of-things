@@ -1,5 +1,4 @@
 #!/bin/bash
-#sudo apt-get update
 ufw disable
 URL="https://192.168.56.110:6443"
 TOKEN=$(sudo cat /vagrant/token_file)

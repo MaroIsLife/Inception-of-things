@@ -1,4 +1,5 @@
 #!/bin/bash
-sudo apt-get update
+#sudo apt-get update
+ufw disable
 curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server" sh -
-sudo cat /var/lib/rancher/k3s/server/node-token > /vagrant/tokens/token_file
+sudo cp /var/lib/rancher/k3s/server/node-token  /vagrant/token_file

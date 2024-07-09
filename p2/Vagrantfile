@@ -1,0 +1,21 @@
+#vagrant up: starts the VMs
+#vagrant global-status: see the active/inactive VMs
+
+Vagrant.configure("2") do |config|
+	config.vm.box = "bento/ubuntu-22.04"
+	config.vm.provider "virtualbox" do |vb|
+		vb.memory = 4000
+		vb.cpus = 2
+	end
+
+	config.vm.define "mougnouS" do |machine2|
+		machine2.vm.hostname = "mougnouS"
+		machine2.vm.network "private_network", ip: "192.168.56.110"
+		machine2.vm.provision "shell", path: "scripts/script.sh"
+	end
+end
+
+
+# kubectl get all
+# sudo kubectl exec -it pod/app3-5df8dfdc48-grkk8 sh``
+#Use LiveHosts Extension to test

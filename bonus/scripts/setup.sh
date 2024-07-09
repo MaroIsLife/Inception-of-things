@@ -168,3 +168,4 @@ echo "Gitlab Password: $ARGOCD_PASSWORD"
 echo "You can Access Gitlab in this URL : https://gitlab.$gitlabDomain"
 echo "Gitlab username: root"
 echo "Gitlab Password: $gitlabPassword"
+

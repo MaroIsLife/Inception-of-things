@@ -64,7 +64,7 @@ kubectl create namespace dev
 kubectl create namespace argocd
 
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-sleep 3
+sleep 10
 # Function to check if all pods are running
 are_all_pods_running() {
     local NOT_RUNNING_PODS=$(kubectl get pods -n argocd --field-selector=status.phase!=Running -o jsonpath='{range .items[*]}{@.metadata.name}')

@@ -63,7 +63,7 @@ k3d cluster create iot-cluster -p "8888:30007"
 kubectl create namespace dev
 kubectl create namespace argocd
 
-kubectl apply -n argocd -f /vagrant/confs/argocd.yaml
+kubectl apply -n argocd -f confs/argocd.yaml
 
 sleep 10
 # Function to check if all pods are running

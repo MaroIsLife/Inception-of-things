@@ -119,7 +119,7 @@ gitlabDomain=localhost
 
 echo "\033[0;34m-----Start installing Gitlab with Helm----- \033[0m"
 # run gitlab application
-helm install gitlab gitlab/gitlab --namespace gitlab --set global.hosts.domain=$gitlabDomain --set global.hosts.https=false --set certmanager-issuer.email=amghough551@gmail.com
+helm install gitlab gitlab/gitlab --namespace gitlab --set global.hosts.domain=$gitlabDomain --set certmanager-issuer.email=amghough551@gmail.com
 echo "\033[0;32mGitlab installed successfully with Helm\033[0m"
 
 sleep 10
@@ -155,9 +155,11 @@ gitlabPassword=$(kubectl get secret -n gitlab gitlab-gitlab-initial-root-passwor
 kubectl port-forward --address 0.0.0.0 -n gitlab svc/gitlab-nginx-ingress-controller 443:443 &> /dev/null &
 echo "Gitlab has been successfully exposed"
 
-sudo kubectl get secret gitlab-gitlab-tls -n gitlab -o jsonpath="{['data']['tls\.crt']}" | base64 --decode >> /vagrant/cert.pem
+sudo kubectl get secret gitlab-gitlab-tls -n gitlab -o jsonpath="{['data']['tls\.crt']}" | base64 --decode >> cert.pem
 
-argocd cert add-tls --from /vagrant/cert.pem gitlab.localhost
+argocd cert add-tls --from cert.pem gitlab.localhost
+
+rm cert.pem
 
 sleep 10
 

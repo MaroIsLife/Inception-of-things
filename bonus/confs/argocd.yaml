@@ -21549,7 +21549,7 @@ spec:
         app.kubernetes.io/name: argocd-applicationset-controller
     spec:
       hostAliases:
-        - ip: "192.168.56.110"
+        - ip: "10.0.2.15"
           hostnames:
             - "gitlab.localhost"
       containers:
@@ -21761,7 +21761,7 @@ spec:
         app.kubernetes.io/name: argocd-dex-server
     spec:
       hostAliases:
-        - ip: "192.168.56.110"
+        - ip: "10.0.2.15"
           hostnames:
             - "gitlab.localhost"
       affinity:
@@ -21868,7 +21868,7 @@ spec:
         app.kubernetes.io/name: argocd-notifications-controller
     spec:
       hostAliases:
-        - ip: "192.168.56.110"
+        - ip: "10.0.2.15"
           hostnames:
             - "gitlab.localhost"
       containers:
@@ -21956,7 +21956,7 @@ spec:
         app.kubernetes.io/name: argocd-redis
     spec:
       hostAliases:
-        - ip: "192.168.56.110"
+        - ip: "10.0.2.15"
           hostnames:
             - "gitlab.localhost"
       affinity:
@@ -22040,7 +22040,7 @@ spec:
         app.kubernetes.io/name: argocd-repo-server
     spec:
       hostAliases:
-        - ip: "192.168.56.110"
+        - ip: "10.0.2.15"
           hostnames:
             - "gitlab.localhost"
       affinity:
@@ -22365,7 +22365,7 @@ spec:
         app.kubernetes.io/name: argocd-server
     spec:
       hostAliases:
-        - ip: "192.168.56.110"
+        - ip: "10.0.2.15"
           hostnames:
             - "gitlab.localhost"
       affinity:

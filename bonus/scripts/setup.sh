@@ -4,7 +4,6 @@
 #k3d cluster delete [clusteName]
 #k3d cluster list
 
-
 # Check if Docker is installed
 if ! command -v docker &> /dev/null
 then
@@ -63,9 +62,13 @@ k3d cluster create iot-cluster -p "8888:30007"
 kubectl create namespace dev
 kubectl create namespace argocd
 
-kubectl apply -n argocd -f /vagrant/confs/argocd.yaml
+# get ip of the current machine
+export MACHINE_IP="$(hostname -I | cut -d ' ' -f1)"
+
+envsubst < confs/argocd.yaml | kubectl apply -n argocd -f -
 
 sleep 10
+
 # Function to check if all pods are running
 are_all_pods_running() {
     local NOT_RUNNING_PODS=$(kubectl get pods -n argocd --field-selector=status.phase!=Running -o jsonpath='{range .items[*]}{@.metadata.name}')
@@ -119,7 +122,7 @@ gitlabDomain=localhost
 
 echo "\033[0;34m-----Start installing Gitlab with Helm----- \033[0m"
 # run gitlab application
-helm install gitlab gitlab/gitlab --namespace gitlab --set global.hosts.domain=$gitlabDomain --set global.hosts.https=false --set certmanager-issuer.email=amghough551@gmail.com
+helm install gitlab gitlab/gitlab --namespace gitlab --set global.hosts.domain=$gitlabDomain --set certmanager-issuer.email=amghough551@gmail.com
 echo "\033[0;32mGitlab installed successfully with Helm\033[0m"
 
 sleep 10
@@ -155,17 +158,23 @@ gitlabPassword=$(kubectl get secret -n gitlab gitlab-gitlab-initial-root-passwor
 kubectl port-forward --address 0.0.0.0 -n gitlab svc/gitlab-nginx-ingress-controller 443:443 &> /dev/null &
 echo "Gitlab has been successfully exposed"
 
-sudo kubectl get secret gitlab-gitlab-tls -n gitlab -o jsonpath="{['data']['tls\.crt']}" | base64 --decode >> /vagrant/cert.pem
+sudo kubectl get secret gitlab-gitlab-tls -n gitlab -o jsonpath="{['data']['tls\.crt']}" | base64 --decode >> cert.pem
 
-argocd cert add-tls --from /vagrant/cert.pem gitlab.localhost
+argocd cert add-tls --from cert.pem gitlab.localhost
+
+rm cert.pem
 
 sleep 10
+Color_Off='\033[0m'
+Green='\033[0;32m'        # Green
+Yellow='\033[0;33m'       # Yellow
+Blue='\033[0;34m'         # Blue
 
-echo "You can Access Argocd in this URL : localhost:8080"
-echo "Gitlab username: admin"
-echo "Gitlab Password: $ARGOCD_PASSWORD"
+echo $Yellow"You can Access Argocd in this URL: $Green https://localhost:8080"$Color_Off
+echo $Yellow"Argocd username: $Green admin"$Color_Off
+echo $Yellow"Argocd Password: $Green $ARGOCD_PASSWORD"$Color_Off
 
-echo "You can Access Gitlab in this URL : https://gitlab.$gitlabDomain"
-echo "Gitlab username: root"
-echo "Gitlab Password: $gitlabPassword"
+echo $Blue"You can Access Gitlab in this URL : $Green https://gitlab.$gitlabDomain"$Color_Off
+echo $Blue"Gitlab username: "$Green"root"$Color_Off
+echo $Blue"Gitlab Password: "$Green"$gitlabPassword"$Color_Off
 

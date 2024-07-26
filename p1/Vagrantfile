@@ -1,7 +1,8 @@
 
 Vagrant.configure("2") do |config|
 
-	config.vm.box = "bento/ubuntu-22.04"
+	config.vm.box = "bento/ubuntu-24.04"
+    config.vm.box_version = "202404.26.0"
 	config.vm.provider "virtualbox" do |vb|
 		vb.memory = 4000
 		vb.cpus = 2
@@ -13,8 +14,6 @@ Vagrant.configure("2") do |config|
             vb.name = "mougnouS"
         end
 		machine1.vm.hostname = "mougnouS"
-		machine1.vm.network "forwarded_port", guest: 6443, host: 6443
-		machine1.vm.network "forwarded_port", guest: 8472, host: 8472, protocol: "udp"
 		machine1.vm.network "private_network", ip: "192.168.56.110"
 		machine1.vm.provision "shell", path: "scripts/server.sh"
 	end

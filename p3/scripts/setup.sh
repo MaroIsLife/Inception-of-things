@@ -96,4 +96,4 @@ ARGOCD_PASSWORD=$(kubectl get secret argocd-initial-admin-secret -n argocd -o js
 echo $ARGOCD_PASSWORD
 argocd login --insecure localhost:8080 --username admin --password $ARGOCD_PASSWORD
 #deploy app with argocd
-argocd app create will-app --repo https://github.com/elhadjaoui/InceptionOfThings.git --path manifests --dest-server https://kubernetes.default.svc --dest-namespace dev --sync-policy automated
+argocd app create will-app --repo https://github.com/elhadjaoui/mel-hadj_config.git --path manifests --dest-server https://kubernetes.default.svc --dest-namespace dev --sync-policy automated
